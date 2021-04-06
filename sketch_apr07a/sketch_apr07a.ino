@@ -21,6 +21,6 @@ void loop() {
   Serial.println();
   Serial.println(f); //디폴트 값으로 소수점 이하 두자리 
   Serial.println(f,5); // 소수점 이하 다섯자리
-
+  Serial.println();
   
 }
