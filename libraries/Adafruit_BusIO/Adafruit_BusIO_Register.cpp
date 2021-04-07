@@ -16,6 +16,7 @@ Adafruit_BusIO_Register::Adafruit_BusIO_Register(Adafruit_I2CDevice *i2cdevice,
                                                  uint16_t reg_addr,
                                                  uint8_t width,
                                                  uint8_t byteorder,
+                                                 uint8_t address_width) {
   _i2cdevice = i2cdevice;
   _spidevice = NULL;
   _addrwidth = address_width;
