@@ -17,7 +17,7 @@ void loop() {
 
     //Serial.print() => 숫자에 해당하는 아스키 코드로 바꾸어 전송함
     //Serial.write() => 숫자 자체 표현
-
+    
     
   }
 }
