@@ -17,6 +17,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   while(Serial.available()){ //개행문자 '\n' 을 만날 때까지 읽음
     char data = Serial.read();
+    
     if(data=='\n'){
       process_it = true; // 문자열 종료
       break;    
