@@ -22,6 +22,7 @@ void loop() {
   Serial.print(" ");
   Serial.print(PWM_value[i]);
  }
+ 
  Serial.println();
  delay(1000);
 
