@@ -11,7 +11,9 @@ hd44780_I2Cexp lcd;   // lcd 객체 생성
 
 unsigned int trigPin = 11; // trig
 unsigned int echoPin = 12; // echo
+
 #define button 2  // 버튼 연결 핀
+
 int red_led = 4;
 int green_led = 13;
 
