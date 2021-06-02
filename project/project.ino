@@ -14,7 +14,8 @@ unsigned int echoPin = 12; // echo
 
 #define button 2  // 버튼 연결 핀
 
-int red_led = 4;
+int red_led = 10;
+int yellow_led = 4;
 int green_led = 13;
 
 int cur = 0;
@@ -25,7 +26,15 @@ int cnt = 0;
 long distance;
 long timeDistance;
 
+String input = "";
+String get_string(String input);
 
+
+int d_red = 10;
+int d_yellow = 50;
+
+boolean key1 = true;
+boolean key2 = true;
 
 void setup(){
   Serial.begin(9600);
@@ -35,7 +44,8 @@ void setup(){
   pinMode(button, INPUT);
   lcd.init(); // lcd 초기화
   lcd.backlight();
-  
+
+  pinMode(yellow_led, OUTPUT);
   pinMode(red_led,OUTPUT);
   pinMode(green_led,OUTPUT);
   digitalWrite(red_led, LOW);
@@ -47,6 +57,37 @@ void setup(){
 
 
 void loop(){
+    input = get_string(input);
+    if(input == "reset"){
+      d_yellow = 50;
+      d_red = 10;
+    }else if( input.substring(0,1) == "y"){
+      // 명령어가 y로 시작하면서 바뀌는 수치값이 d_red보다 클 경우!(노란불점등 거리가 빨간불 점등 거리보다 짦을 순 없기떄문)
+      if(input.substring(1).toInt() > d_red){
+        d_yellow = input.substring(1).toInt();
+        key1 = true;
+      }else if(key1 && key2){
+        Serial1.print(d_red);
+        Serial1.write("보다 크게 입력하셔야 합니다.\n");
+        key1 = false;
+      }
+      
+      
+    }else if(input.substring(0,1) =="r" ){
+      // 명령어가 r로 시작하면서 바뀌는 수치값이 d_yellow보다 작을 경우만!( 빨간불 점등거리가 노란불 점등거리보다 클 수 없다.)
+      if(input.substring(1).toInt() < d_yellow){
+        d_red = input.substring(1).toInt();
+        key2 = true;
+      }else if (key1 && key2){
+        Serial1.print(d_yellow);
+        Serial1.write("보다 작게 입력하셔야 합니다.\n");
+        key2 = false;
+      }
+      
+      
+    }
+  
+  
     int cur = digitalRead(button);
     // 디바운싱 해결
     if(cur != before){
@@ -125,18 +166,37 @@ void showLight(){
   int bright = map(cds, 0, 1023, 255, 0); // 어두워지면 LED도 어두워지게 역매핑
 //  Serial.println(cds);
 
-  if (distance < 10){
-     // 거리가 10미만일시 빨간불 표시하는데 현재 밝기에 고려하여 빛 발광
+  if (distance < d_red){
+     // 거리가 d_red 미만일시 빨간불 표시하는데 현재 밝기에 고려하여 빛 발광
     analogWrite(red_led, bright);
     digitalWrite(green_led, LOW);
+    digitalWrite(yellow_led,LOW);
+  }else if(distance < d_yellow){
+    // // 거리가 d_red 초과 d_yellow 이상일시 노란불 표시, 현재 밝기에 고려하여 빛 발광
+    analogWrite(yellow_led, bright);
+    digitalWrite(green_led, LOW);
+    digitalWrite(red_led, LOW);    
   }else{
-    // 거리가 10 이상일시 초록불 표시, 현재 밝기에 고려하여 빛 발광
+    // 거리가 d_yellow 이상일시 초록불 표시, 현재 밝기에 고려하여 빛 발광
     digitalWrite(red_led, LOW);
     analogWrite(green_led, bright);
+    digitalWrite(yellow_led, LOW);
   }
   delay(100);
 }
 
+String get_string(String input){
+  String inputString = "";             // 아무것도 입력하지 않았을 때 빈 문자열
+  while(Serial1.available()) {      // 블루투스 통신에 데이터가 입력되면(스마트폰 -> 아두이노)
+    delay(3);                         // 데이터 수신이 잘 이루어지기 위해 3ms 기다림
+    if (Serial1.available() >0) {   // 수신된 데이터가 있으면
+      char c = Serial1.read();      // 수신된 데이터 1개를 받아 c로 저장(이후에는 그다음걸 받아 c로 저장
+      inputString += c;                // 수신된 데이터를 c와 붙임. 
+    }
+  }
+  if(inputString.length() == 0) return input;    // 문자열 길이가 0이면(데이터를 입력받지 않았다면) 기존의 값을 반환  
+  else return inputString;             // 데이터를 입력받았다면 해당 문자열을 출력
+}
 //void time(){
 //  t = rtc.getTime();
 //
