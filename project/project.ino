@@ -14,27 +14,29 @@ unsigned int echoPin = 12; // echo
 
 #define button 2  // 버튼 연결 핀
 
-int red_led = 10;
-int yellow_led = 4;
-int green_led = 13;
+int red_led = 10; // 빨간색 led 핀 번호
+int yellow_led = 4; // 노란색 led 핀번호
+int green_led = 13; // 초록색 led 핀번호
 
-int cur = 0;
+// 디바운싱을 위한 변수
+int cur = 0;  // current
 int before = 0;
 int state = 0;
-int cnt = 0;
+int cnt = 0; // count
 
-long distance;
+long distance;  // lcd에 표시될 길이
 long timeDistance;
 
-String input = "";
+String input = "";  //input 초기화
 String get_string(String input);
 
 
-int d_red = 10;
-int d_yellow = 50;
+int d_red = 10; // 빨간불이 켜질 조건(거리가 10 미만일떄)
+int d_yellow = 50; // 노란불이 켜질 조건( 거리가 50 미만일때)
 
 boolean key1 = true;
 boolean key2 = true;
+boolean key3 = true;
 
 void setup(){
   Serial.begin(9600);
