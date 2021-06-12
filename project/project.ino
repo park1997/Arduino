@@ -4,6 +4,10 @@
 #include <hd44780.h>  // lcd
 #include <hd44780ioClass/hd44780_I2Cexp.h>  //lcd
 
+#include <core_build_options.h>
+#include <swRTC.h>
+
+swRTC rtc;  //클래스 개체 선언
 
 
 
@@ -53,8 +57,11 @@ void setup(){
   digitalWrite(red_led, LOW);
   digitalWrite(green_led, LOW);
 
+  rtc.stopRTC();            //정지
+  rtc.setTime(02, 15, 30);  //시, 분, 초
+  rtc.setDate(12, 6, 2021); //일, 월, 년
+  rtc.startRTC();           //시작
 
-  
 }
 
 
@@ -116,12 +123,8 @@ void loop(){
       digitalWrite(green_led, LOW);
     }else{
       showDistance(); // 거리를 보여주는 메소드
-      showLight();  // 빛을 보여주는 메소드
-//      Serial.print("HH!");
-      
+      showLight();  // 빛을 보여주는 메소드 
     }
-   
-    
 }
 
 
@@ -144,6 +147,7 @@ void showDistance(){
       pinMode(echoPin, INPUT);
     }
     if( distance <= 3){
+      time();
       Serial.write("   충돌하였습니다\n");
 //      time();  // 현재 시간 출력
       Serial1.write("   충돌하였습니다\n");
@@ -199,19 +203,21 @@ String get_string(String input){
   if(inputString.length() == 0) return input;    // 문자열 길이가 0이면(데이터를 입력받지 않았다면) 기존의 값을 반환  
   else return inputString;             // 데이터를 입력받았다면 해당 문자열을 출력
 }
-//void time(){
-//  t = rtc.getTime();
-//
-//  Serial.print(t.year);
-//  Serial.print("-");
-//  Serial.print(t.mon);
-//  Serial.print("-");
-//  Serial.print(t.date);
-//  Serial.print("\t");
-// 
-//  Serial.print(t.hour);
-//  Serial.print(":");
-//  Serial.print(t.min);
-//  Serial.print(":");
-//  Serial.println(t.sec);
-//}
+
+void time(){
+  Serial1.print(rtc.getYear(), DEC);
+  Serial1.print("/");
+  Serial1.print(rtc.getMonth(), DEC);
+  Serial1.print("/");
+  Serial1.print(rtc.getDay(), DEC);
+  Serial1.print("\t"); 
+  
+  Serial1.print(rtc.getHours(), DEC);
+  Serial1.print(":");
+  Serial1.print(rtc.getMinutes(), DEC);
+  Serial1.print(":");
+  Serial1.print(rtc.getSeconds(), DEC);
+  
+
+  
+}
