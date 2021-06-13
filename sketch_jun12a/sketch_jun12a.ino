@@ -24,5 +24,5 @@ void loop() {
   Serial.print(rtc.getMonth(), DEC);
   Serial.print("/");
   Serial.println(rtc.getDay(), DEC);
-//  delay(00);
+  
 }
