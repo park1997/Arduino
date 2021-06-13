@@ -51,50 +51,55 @@ void setup(){
   lcd.init(); // lcd 초기화
   lcd.backlight();
 
+  pinMode(green_led,OUTPUT);
   pinMode(yellow_led, OUTPUT);
   pinMode(red_led,OUTPUT);
-  pinMode(green_led,OUTPUT);
-  digitalWrite(green_led, HIGH);
-  digitalWrite(yellow_led, HIGH);
-  digitalWrite(red_led, HIGH);
+  
+  digitalWrite(green_led, LOW);
+  digitalWrite(yellow_led, LOW);
+  digitalWrite(red_led, LOW);
 
   rtc.stopRTC();            //정지
-  rtc.setTime(02, 15, 30);  //시, 분, 초
-  rtc.setDate(12, 6, 2021); //일, 월, 년
+  rtc.setTime(22, 4, 30);  //시, 분, 초
+  rtc.setDate(13, 6, 2021); //일, 월, 년
   rtc.startRTC();           //시작
 
 }
 
 
 void loop(){
-    input = get_string(input);
-    if(input == "reset"){
-      d_yellow = 50;  // 노란불이 꺼지는 거리값 50cm로 재 초기화
-      d_red = 10; // 빨간불이 꺼지는 거리값 10cm로 재 초기화
-    }else if( input.substring(0,1) == "y"){ // 명령어의 첫번쨰 글자가 y일 경우
-      // 명령어가 y로 시작하면서 바뀌는 수치값이 d_red보다 클 경우!(노란불점등 거리가 빨간불 점등 거리보다 짦을 순 없기떄문)
-      if(input.substring(1).toInt() > d_red){
-        d_yellow = input.substring(1).toInt();  // 명령어의 숫자만큼의 거리값으로 변환함
-        key1 = true;
-      }else if(key1 && key2){ // yellow의 거리값이 red보다 작아질경우(말이 안되는 상황)
-        Serial1.print(d_red);
-        Serial1.write("보다 크게 입력하셔야 합니다.\n");
-        key1 = false;
+//    digitalWrite(red_led, HIGH);
+    if (Serial1.available()){
+      input = get_string(input);
+      if(input == "reset"){
+        d_yellow = 50;  // 노란불이 꺼지는 거리값 50cm로 재 초기화
+        d_red = 10; // 빨간불이 꺼지는 거리값 10cm로 재 초기화
+      }else if( input.substring(0,1) == "y"){ // 명령어의 첫번쨰 글자가 y일 경우
+        // 명령어가 y로 시작하면서 바뀌는 수치값이 d_red보다 클 경우!(노란불점등 거리가 빨간불 점등 거리보다 짦을 순 없기떄문)
+        if(input.substring(1).toInt() > d_red){
+          d_yellow = input.substring(1).toInt();  // 명령어의 숫자만큼의 거리값으로 변환함
+          key1 = true;
+        }else if(key1 && key2){ // yellow의 거리값이 red보다 작아질경우(말이 안되는 상황)
+          Serial1.print(d_red);
+          Serial1.write("보다 크게 입력하셔야 합니다.\n");
+          key1 = false;
+        }
+        
+        
+      }else if(input.substring(0,1) =="r" ){  // 명령어의 첫번쨰 글자가 r일 경우
+        // 명령어가 r로 시작하면서 바뀌는 수치값이 d_yellow보다 작을 경우만!( 빨간불 점등거리가 노란불 점등거리보다 클 수 없다.)
+        if(input.substring(1).toInt() < d_yellow){
+          d_red = input.substring(1).toInt(); // 명령어의 숫자값으로 빨간불이 점등될 거리값 초기화
+          key2 = true;
+        }else if (key1 && key2){  // red의 거리값이 yellow의 거리값보다 커질경우 ( 말이 안되는 경우)
+          Serial1.print(d_yellow);
+          Serial1.write("보다 작게 입력하셔야 합니다.\n");
+          key2 = false;
+        }
       }
       
-      
-    }else if(input.substring(0,1) =="r" ){  // 명령어의 첫번쨰 글자가 r일 경우
-      // 명령어가 r로 시작하면서 바뀌는 수치값이 d_yellow보다 작을 경우만!( 빨간불 점등거리가 노란불 점등거리보다 클 수 없다.)
-      if(input.substring(1).toInt() < d_yellow){
-        d_red = input.substring(1).toInt(); // 명령어의 숫자값으로 빨간불이 점등될 거리값 초기화
-        key2 = true;
-      }else if (key1 && key2){  // red의 거리값이 yellow의 거리값보다 커질경우 ( 말이 안되는 경우)
-        Serial1.print(d_yellow);
-        Serial1.write("보다 작게 입력하셔야 합니다.\n");
-        key2 = false;
-      }
     }
-  
+    
   
     int cur = digitalRead(button);  // 버튼의 상태 검사
     // 디바운싱 해결
@@ -119,6 +124,7 @@ void loop(){
       lcd.print("FOR DISTANCE");
       delay(200);
       digitalWrite(red_led, LOW);
+      digitalWrite(yellow_led, LOW);
       digitalWrite(green_led, LOW);
     }else{
       showDistance(); // 거리를 보여주는 메소드
@@ -132,6 +138,7 @@ void showDistance(){
     
     digitalWrite(trigPin, LOW);// trig핀에서 초음파 내보냄 일단 low로 초기화함
     delayMicroseconds(2); //2 microsecond동안 잠깐 delay
+
     
     digitalWrite(trigPin, HIGH); // 초음파를 내보내기위해 HIGH 
     delayMicroseconds(10); // 10 microsecond동안 잠깐 delay
@@ -169,9 +176,10 @@ void showLight(){
   int cds = analogRead(A1); // 현재의 조도값을 읽어옴
   int bright = map(cds, 0, 1023, 255, 0); // 어두워지면 LED도 어두워지게 역매핑
 //  Serial.println(cds);
-
+  
   if (distance < d_red){
      // 거리가 d_red 미만일시 빨간불 표시하는데 현재 밝기에 고려하여 빛 발광
+    Serial.println(distance);
     analogWrite(red_led, bright); // 현재 조도값에 반비례하여 밝기 조정
     digitalWrite(green_led, LOW);
     digitalWrite(yellow_led,LOW);
