@@ -54,8 +54,9 @@ void setup(){
   pinMode(yellow_led, OUTPUT);
   pinMode(red_led,OUTPUT);
   pinMode(green_led,OUTPUT);
-  digitalWrite(red_led, LOW);
-  digitalWrite(green_led, LOW);
+  digitalWrite(green_led, HIGH);
+  digitalWrite(yellow_led, HIGH);
+  digitalWrite(red_led, HIGH);
 
   rtc.stopRTC();            //정지
   rtc.setTime(02, 15, 30);  //시, 분, 초
